@@ -439,7 +439,6 @@ export const fr: Dictionary = {
       successText: "Je vous réponds sous 24 h avec de premières pistes et une proposition d'appel.",
       again: "Envoyer une autre demande",
       error: "L'envoi a échoué. Réessayez dans un instant ou écrivez-moi directement :",
-      bodyLabels: { name: "Nom", email: "E-mail", type: "Type de projet", budget: "Budget", timeline: "Délai" },
     },
   },
   footer: {

@@ -155,7 +155,6 @@ export interface Dictionary {
       successText: string;
       again: string;
       error: string;
-      bodyLabels: { name: string; email: string; type: string; budget: string; timeline: string };
     };
   };
   footer: {

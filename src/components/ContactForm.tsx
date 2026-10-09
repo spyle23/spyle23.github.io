@@ -19,9 +19,9 @@ export function ContactForm({ form }: { form: FormDict }) {
     const data = new FormData(formEl);
     const get = (key: string) => String(data.get(key) ?? "").trim();
     const name = get("name");
-    const labels = form.bodyLabels;
 
-    // Web3Forms forwards every field to the inbox; "email" becomes the reply-to address
+    // Web3Forms forwards every field to the inbox; "email" becomes the reply-to address.
+    // Field names must stay ASCII: Web3Forms garbles accented field names.
     const payload = new FormData();
     payload.append("access_key", WEB3FORMS_KEY);
     payload.append("subject", `${form.subject} — ${type}${name ? ` — ${name}` : ""}`);
@@ -29,9 +29,10 @@ export function ContactForm({ form }: { form: FormDict }) {
     payload.append("botcheck", get("botcheck"));
     payload.append("name", name);
     payload.append("email", get("email"));
-    payload.append(labels.type, type);
-    payload.append(labels.budget, get("budget"));
-    payload.append(labels.timeline, get("timeline"));
+    payload.append("Type de projet", type);
+    payload.append("Budget", get("budget"));
+    payload.append("Delai", get("timeline"));
+    payload.append("Langue du site", document.documentElement.lang.toUpperCase());
     payload.append("message", get("message"));
 
     setStatus("sending");

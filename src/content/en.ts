@@ -439,7 +439,6 @@ export const en: Dictionary = {
       successText: "I'll get back to you within 24 hours with first ideas and a call proposal.",
       again: "Send another request",
       error: "Sending failed. Please try again in a moment or email me directly:",
-      bodyLabels: { name: "Name", email: "Email", type: "Project type", budget: "Budget", timeline: "Timeline" },
     },
   },
   footer: {
