@@ -7,6 +7,9 @@ export const asset = (path: string) => `${BASE_PATH}${path}`;
 /** Absolute URL for canonical / Open Graph / sitemap entries. */
 export const absoluteUrl = (path = "/") => `${SITE_URL}${BASE_PATH}${path}`;
 
+/** Web3Forms access key: public by design, it only lets the contact form email the address it was created for */
+export const WEB3FORMS_KEY = "93b1991e-9d03-4aaa-8783-607cfe493839";
+
 export const PROFILE = {
   name: "Andriatiana Jean-Marie",
   email: "andriatianajeanmarie@gmail.com",

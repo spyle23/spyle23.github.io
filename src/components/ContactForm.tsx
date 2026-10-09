@@ -3,35 +3,73 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import type { Dictionary } from "@/content/types";
-import { PROFILE } from "@/lib/site";
+import { PROFILE, WEB3FORMS_KEY } from "@/lib/site";
 import { Icon } from "./Icon";
 
 type FormDict = Dictionary["contact"]["form"];
+type Status = "idle" | "sending" | "success" | "error";
 
 export function ContactForm({ form }: { form: FormDict }) {
   const [type, setType] = useState(form.types[0]);
+  const [status, setStatus] = useState<Status>("idle");
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
+    const data = new FormData(formEl);
     const get = (key: string) => String(data.get(key) ?? "").trim();
     const name = get("name");
     const labels = form.bodyLabels;
-    const body = [
-      `${labels.name}: ${name}`,
-      `${labels.email}: ${get("email")}`,
-      `${labels.type}: ${type}`,
-      `${labels.budget}: ${get("budget")}`,
-      `${labels.timeline}: ${get("timeline")}`,
-      "",
-      get("message"),
-    ].join("\n");
-    const subject = `${form.subject} — ${type}${name ? ` — ${name}` : ""}`;
-    window.location.href = `mailto:${PROFILE.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Web3Forms forwards every field to the inbox; "email" becomes the reply-to address
+    const payload = new FormData();
+    payload.append("access_key", WEB3FORMS_KEY);
+    payload.append("subject", `${form.subject} — ${type}${name ? ` — ${name}` : ""}`);
+    payload.append("from_name", "Portfolio spyle23.github.io");
+    payload.append("botcheck", get("botcheck"));
+    payload.append("name", name);
+    payload.append("email", get("email"));
+    payload.append(labels.type, type);
+    payload.append(labels.budget, get("budget"));
+    payload.append(labels.timeline, get("timeline"));
+    payload.append("message", get("message"));
+
+    setStatus("sending");
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: payload,
+      });
+      const json = (await res.json()) as { success?: boolean };
+      if (!res.ok || !json.success) throw new Error("Web3Forms rejected the submission");
+      formEl.reset();
+      setType(form.types[0]);
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   };
+
+  if (status === "success") {
+    return (
+      <div className="form form-success" role="status">
+        <span className="service-icon">
+          <Icon name="checkCircle" />
+        </span>
+        <h3>{form.successTitle}</h3>
+        <p>{form.successText}</p>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStatus("idle")}>
+          {form.again}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form className="form" onSubmit={onSubmit}>
+      {/* Honeypot: hidden from people, filled by bots */}
+      <input type="checkbox" name="botcheck" className="sr-only" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <div className="form-row">
         <div className="field">
           <label htmlFor="cf-name">{form.name}</label>
@@ -79,8 +117,14 @@ export function ContactForm({ form }: { form: FormDict }) {
         <textarea className="input" id="cf-message" name="message" placeholder={form.messagePh} required />
       </div>
 
-      <button type="submit" className="btn btn-primary">
-        {form.submit}
+      {status === "error" && (
+        <p className="form-error" role="alert">
+          {form.error} <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
+        </p>
+      )}
+
+      <button type="submit" className="btn btn-primary" disabled={status === "sending"}>
+        {status === "sending" ? form.sending : form.submit}
         <Icon name="send" />
       </button>
       <p className="form-note">{form.note}</p>

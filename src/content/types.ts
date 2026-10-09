@@ -148,8 +148,13 @@ export interface Dictionary {
       message: string;
       messagePh: string;
       submit: string;
+      sending: string;
       note: string;
       subject: string;
+      successTitle: string;
+      successText: string;
+      again: string;
+      error: string;
       bodyLabels: { name: string; email: string; type: string; budget: string; timeline: string };
     };
   };
